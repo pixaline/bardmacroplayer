@@ -1,7 +1,10 @@
 # FFXIV Bard Macro Player
+![Bard Macro Player preview](http://sqnya.se/bard.png)
 This is an utility to play 3 octave arrangements from text files and (attempted) midi files using the Autohotkey language. It loads and parses ffxiv's KEYBIND.DAT file (autodetected by access time) to find the keystrokes for the Performance actions, loads and parses the text/midi files and converts it to millisecond time format, and then implements a note player that sends the correct keystrokes to the FFXIV window. This only sends keystrokes and does not read the game memory at all, so you shouldn't get banned for using it.
 
 ## Usage
+[Download latest version](https://github.com/parulina/bardmacroplayer/releases)
+
 Make a folder to contain BardMacroPlayer.exe, BardMacroPlayer.ini (optional) and a subdirectory called "songs". You should put midi (.mid) files and bard arrangement songs (.txt) in there. The program should be self-explanatory enough. You can hide the program while in-game by pressing the Insert key (default).
 
 ## Midi files
