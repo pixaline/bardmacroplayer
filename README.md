@@ -1,17 +1,17 @@
 # FFXIV Bard Macro Player
 ![Bard Macro Player preview](http://sqnya.se/bard.png)
-This is an utility to play 3 octave arrangements from text files and (attempted) midi files using the Autohotkey language. It loads and parses ffxiv's KEYBIND.DAT file (autodetected by access time) to find the keystrokes for the Performance actions, loads and parses the text/midi files and converts it to millisecond time format, and then implements a note player that sends the correct keystrokes to the FFXIV window. This only sends keystrokes and does not read the game memory at all, so you shouldn't get banned for using it.
+This is an utility to play 3 octave arrangements from text files and midi files using the Autohotkey language. It loads and parses ffxiv's KEYBIND.DAT file (autodetected by access time) to find the keystrokes for the Performance actions, loads and parses the text/midi files and converts it to millisecond time format, and then implements a note player that sends the correct keystrokes to the FFXIV window.
 
 ## Usage
 [Download latest version](https://github.com/parulina/bardmacroplayer/releases)
 
-Make a folder to contain BardMacroPlayer.exe, BardMacroPlayer.ini (optional) and a subdirectory called "songs". You should put midi (.mid) files and bard arrangement songs (.txt) in there. The program should be self-explanatory enough. You can hide the program while in-game by pressing the Insert key (default).
+Make a folder to contain BardMacroPlayer.exe, BardMacroPlayer.ini (optional) and a subdirectory called "songs". You should put midi (.mid) files and bard arrangement songs (.txt) in there. The program should be self-explanatory enough. You can hide the program while in-game by pressing the Insert key (default). The stop button reloads the selected song/track for easy editing. Below the stop/play button is a small slider which offsets the midi track range. It's meant to be used if your midi file plays too high or too low for your bard's 3-octave range.
 
 ## Midi files
-Midi files is an experimental feature. It should be able to pick out suitable tracks to play and perform them without problems. However, there might be some tempo issues that needs fixing. 
+Midi files is an experimental feature. It should be able to pick out suitable tracks to play and perform them without problems. However, there might be some issues due to the complexity of the midi file format. In such case, please open an issue and attach the midi file with problems.
 
 ## Bard arrangement file format
-These are simple text files designed to be easily edited in notepad. Notes are depicted as they are in-game [C, C#, D, Eb, E, F, F#, G, G#, A, Bb, B] and the upper and lower octave (appending [+1] and [-1] to the note). Pauses are depicted as forward slashes [/], which can be concatenated together. Each pause has a default duration of 100 milliseconds. Note that the C+1 note isn't available.
+These are simple text files designed to be easily edited in notepad. Notes are depicted as they are in-game [C, C#, D, Eb, E, F, F#, G, G#, A, Bb, B] and the upper and lower octave (appending [+1] and [-1] to the note) as well as the single [ C+2 ]. Pauses are depicted as forward slashes [/], which can be concatenated together. Each pause and newline has a default duration of 100 milliseconds. Notes and pauses should be separated by one space.
 
 You can set some settings specific to each arrangement by writing them as individual lines anywhere in the file.
 * ``p`` followed by a number sets the pause duration in milliseconds. ``p100`` turns the ``////`` pause in to a 400 millisecond pause.
