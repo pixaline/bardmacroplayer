@@ -108,7 +108,7 @@ MakeMainWindow() {
 	Gui, Font, s8 w400, Segoe UI
 	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player v1.1 ]`n by Freya Katva @ Ultros
 	
-	Gui, Add, Slider, ToolTip Thick10 voctaveShift Range-2-2 x0 y60 w80, 0
+	Gui, Add, Slider, ToolTip Thick10 voctaveShift Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
 		
 }
