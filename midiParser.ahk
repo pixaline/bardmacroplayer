@@ -125,7 +125,7 @@ class MidiTrack
 	
 	NoteDown(note, channel, dms) {
 		if(InStr(this.trackName, "Piano") || true) {
-			this.trackNotes[this.trackNumNotes].deltaMs := dms
+			this.trackNotes[this.trackNumNotes-1].deltaMs := dms
 			this.trackNotes.Push(new NoteEvent(notesThreeOctaves[(note + 1) - 12 * (3 - octaveShift)], channel))
 			this.trackNumNotes += 1
 		}
