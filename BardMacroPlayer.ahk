@@ -7,6 +7,7 @@ SendMode Event
 global NoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
 global OctaveShift := 0
 
+global Version := "v1.2"
 global keybindFile := ""
 global playerFiles := []
 global currentPlayer := 0
@@ -88,7 +89,7 @@ MakeMainWindow() {
 	
 	Gui, PlayWindow: New, +ToolWindow +AlwaysOnTop +E0x08000000
 	Gui, PlayWindow:+Owner +OwnDialogs
-	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player 1.1
+	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player %Version%
 	
 	if(WinExist("ahk_class FFXIVGAME") != 0x00) {
 		ControlGetPos, ffxivX, ffxivY, ffxivWidth, ffxivHeight,, ahk_class FFXIVGAME
@@ -105,7 +106,7 @@ MakeMainWindow() {
 	Gui, Add, Button, Hide ys w30 h30 vPlayPauseControl gPausePlaySubmit, `;
 	
 	Gui, Font, s8 w400, Segoe UI
-	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player v1.1 ]`n by Freya Katva @ Ultros
+	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player %Version% ]`n by Freya Katva @ Ultros
 	
 	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
