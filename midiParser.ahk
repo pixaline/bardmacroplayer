@@ -104,6 +104,10 @@ class NoteEvent
 	channel := 0
 	deltaMs := 0
 	
+	GetNoteLetter(octaveOffset := 0) {
+		return notesThreeOctaves[(this.note + 1) - 12 * (3 - octaveOffset)]
+	}
+	
 	__New(n, c := 0) {
 		this.note := n
 		this.deltaMs := 1
@@ -126,7 +130,7 @@ class MidiTrack
 	NoteDown(note, channel, dms) {
 		if(InStr(this.trackName, "Piano") || true) {
 			this.trackNotes[this.trackNumNotes-1].deltaMs := dms
-			this.trackNotes.Push(new NoteEvent(notesThreeOctaves[(note + 1) - 12 * (3 - octaveShift)], channel))
+			this.trackNotes.Push(new NoteEvent(note, channel))
 			this.trackNumNotes += 1
 		}
 	}

@@ -5,8 +5,7 @@ SendMode Event
 
 ; default note keys
 global NoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
-; quick fix when loading midis: shift octaves up holding shift and down holding ctrl while loading
-global octaveShift := 0
+global OctaveShift := 0
 
 global keybindFile := ""
 global playerFiles := []
@@ -108,12 +107,18 @@ MakeMainWindow() {
 	Gui, Font, s8 w400, Segoe UI
 	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player v1.1 ]`n by Freya Katva @ Ultros
 	
-	Gui, Add, Slider, ToolTip Thick10 voctaveShift Range-4-4 x0 y60 w80, 0
+	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
 		
 }
 LaunchGithub() {
 	Run https://github.com/parulina/bardmacroplayer
+}
+OctaveSlider() {
+	Gui, Submit, NoHide
+	if(currentPlayer) {
+		currentPlayer.octaveShift := OctaveShift
+	}
 }
 StopSubmit() {
 	Gui, Submit, NoHide
@@ -278,7 +283,6 @@ ToggleWindow() {
 }
 
 LoadFile(file, track := 1) {
-	global octaveShift
 	if(currentPlayer) {
 		Thread, NoTimers
 		currentPlayer.Stop()

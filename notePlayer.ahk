@@ -101,7 +101,7 @@ class MidiPlayer extends BasePlayer
 {
 	midi := 0
 	trackIndex := 1
-	
+	octaveShift := 0
 	
 	Play() {
 		base.Play()
@@ -139,7 +139,7 @@ class MidiPlayer extends BasePlayer
 			
 		} else if(this.IsPlaying()) {
 			note := this.GetNote()
-			base.PlayNote(note.note)
+			base.PlayNote(note.GetNoteLetter(this.octaveShift))
 			ms := -Abs(note.deltaMs)
 			obj := this.playObject
 			SetTimer % obj, % ms, -1
