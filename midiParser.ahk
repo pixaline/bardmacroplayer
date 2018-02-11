@@ -1,21 +1,5 @@
 #SingleInstance force
 
-global notesOctaves := ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B"]
-global notesThreeOctaves := []
-
-setupNotes() {
-	Loop, 3 {
-		ai := A_Index
-		for index, value in notesOctaves {
-			note := value . (ai == 1 ? "-1" : (ai == 3 ? "+1" : ""))
-			notesThreeOctaves.Push(note)
-		}
-	}
-	notesThreeOctaves.Push("C+2")
-}
-
-setupNotes()
-
 swapEndian(i) {
 	return (i >> 24) | ((i >> 8) & 0x0000FF00) | ((i << 8) & 0x00FF0000) | (i << 24)
 }
@@ -105,7 +89,7 @@ class NoteEvent
 	deltaMs := 0
 	
 	GetNoteLetter(octaveOffset := 0) {
-		return notesThreeOctaves[(this.note + 1) - 12 * (3 - octaveOffset)]
+		return BardRange[(this.note + 1) - 12 * (3 - octaveOffset)]
 	}
 	
 	__New(n, c := 0) {

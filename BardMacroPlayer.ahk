@@ -5,9 +5,13 @@ SendMode Event
 
 ; default note keys
 global NoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
+global BardRange := ["C-1", "C#-1", "D-1", "Eb-1", "E-1", "F-1", "F#-1", "G-1", "G#-1", "A-1", "Bb-1", "B-1", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B", "C+1", "C#+1", "D+1", "Eb+1", "E+1", "F+1", "F#+1", "G+1", "G#+1", "A+1", "Bb+1", "B+1", "C+2"]
 global OctaveShift := 0
 
 global Version := "v1.2"
+global MidiInModule
+global MainHwnd
+
 global keybindFile := ""
 global playerFiles := []
 global currentPlayer := 0
@@ -84,10 +88,12 @@ ToggleMainWindow() {
 }
 
 MakeMainWindow() {
+	global MainHwnd
+	
 	playWidth := 250
 	playHeight := 70
 	
-	Gui, PlayWindow: New, +ToolWindow +AlwaysOnTop +E0x08000000
+	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop +E0x08000000
 	Gui, PlayWindow:+Owner +OwnDialogs
 	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player %Version%
 	
@@ -110,7 +116,6 @@ MakeMainWindow() {
 	
 	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
-		
 }
 LaunchGithub() {
 	Run https://github.com/parulina/bardmacroplayer
@@ -267,6 +272,28 @@ UpdateFileList() {
 		}
 	}
 }
+
+UseMidiDevice(device) {
+
+	DllCall("midi_in.dll\stop")
+	if(DllCall("midi_in.dll\getCurDevID", Int) >= 0) {
+		res := DllCall("midi_in.dll\close")
+		if(res) {
+			MsgBox, Error closing midi device`n%res%
+			return
+		}
+	}
+	res := DllCall("midi_in.dll\open", UInt,MainHwnd, Int,device, Int)
+	if(res) {
+		MsgBox, Error opening midi device`n%res%
+		return
+	}
+	DllCall("midi_in.dll\start")
+	msgNum := 0x2000
+	DllCall("midi_in.dll\listenNoteRange", int,36, int,72, int,0x00, int,0, int,msgNum)
+	OnMessage(msgNum, "PlayMidiInput")
+}
+
 ReadSettings()
 ToggleMainWindow()
 ReadKeyConfig()
@@ -274,6 +301,13 @@ if(GetKeyState("Shift", "P")) {
 	ShowParsedKeyboard()
 }
 Hotkey, % settings["HideHotkey"], ToggleWindow
+
+if((MidiInModule := DllCall("LoadLibrary", Str,"midi_in.dll")) != 0) {
+	if((devs := DllCall("midi_in.dll\getNumDevs")) > 0) {
+		UseMidiDevice(0)
+	}
+}
+
 
 ToggleWindow() {
 	if(WinActive("ahk_class FFXIVGAME")) {
@@ -302,13 +336,20 @@ LoadFile(file, track := 1) {
 	UpdateMainWindow()
 }
 
+PlayMidiInput(note, vel) {
+	if(vel) {
+		noteLetter := BardRange[(note + 1 -(12 * (3 - OctaveShift)))]
+		PlayNoteCallback(noteLetter)
+	}
+}
+
 PlayNoteCallback(note)
 {
 	key := NoteKeys[note]
 	if(WinExist("ahk_class FFXIVGAME")) {
 		ControlSend,, %key%, ahk_class FFXIVGAME
 	} else {
-		;Send, %key%
+		;MsgBox, %note%
 	}
 	return
 }
