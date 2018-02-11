@@ -97,7 +97,7 @@ MakeMainWindow() {
 	playWidth := 250
 	playHeight := 90
 	
-	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop +E0x08000000
+	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop
 	Gui, PlayWindow:+Owner +OwnDialogs
 	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player %Version%
 	
