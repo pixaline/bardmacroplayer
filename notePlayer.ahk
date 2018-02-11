@@ -59,6 +59,10 @@ class TxtPlayer extends BasePlayer
 		return this.txt.numNotes
 	}
 	
+	GetProgress() {
+		return ((this.noteIndex-1) / (this.GetNumNotes()-1))
+	}
+
 	GetNote(note := -1) {
 		if(note == -1) {
 			note := this.noteIndex
@@ -119,6 +123,9 @@ class MidiPlayer extends BasePlayer
 			return
 		track := this.midi.midiTracks[this.trackIndex]
 		return track
+	}
+	GetProgress() {
+		return ((this.noteIndex-1) / (this.GetNumNotes()-1))
 	}
 	
 	GetNumNotes() {

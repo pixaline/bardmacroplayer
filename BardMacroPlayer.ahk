@@ -47,6 +47,7 @@ ReadSettings() {
 
 global fileSelectionOpen
 
+global SongProgressBar
 global FileSelectionControl
 global FileLoadedControl
 global StopControl
@@ -114,7 +115,7 @@ MakeMainWindow() {
 	global MainHwnd
 	
 	playWidth := 250
-	playHeight := 90
+	playHeight := 95
 	
 	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop
 	Gui, PlayWindow:+Owner +OwnDialogs
@@ -137,14 +138,15 @@ MakeMainWindow() {
 	Gui, Font, s8 w400, Segoe UI
 	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player %Version% ]`n by Freya Katva @ Ultros
 	
-	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
-	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
+	Gui, Add, Slider, ToolTip Section Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y65 w80, 0
+	Gui, Add, Progress, ys w150 h8 c222222 BackgroundCCCCCC vSongProgressBar
 	
 	OnMessage(0x111, "MainWindowCommand")
 	OnMessage(0x203, "MainWindowDoubleClick")
 	OnMessage(0x201, "MainWindowDown")
 	
 	Menu, AppMenu, Add, Parsed keys, ShowParsedKeyboard
+	Menu, AppMenu, Add, Project site, LaunchGithub
 	Menu, AppMenu, Add, Exit, ExitApplication
 	Menu, MainMenu, Add, App, :AppMenu
 	Gui, Menu, MainMenu
@@ -161,6 +163,7 @@ OctaveSlider() {
 }
 StopSubmit() {
 	Gui, Submit, NoHide
+	SetTimer, UpdateProgressBar, Off
 	if(currentPlayer) {
 		LoadFile(currentPlayer.filename, currentPlayer.trackIndex)
 	}
@@ -171,9 +174,11 @@ PausePlaySubmit() {
 	if(currentPlayer) {
 		if(currentPlayer.IsPlaying()) {
 			currentPlayer.Pause()
+			SetTimer, UpdateProgressBar, Off
 		} else {
 			currentPlayer.Play()
 			WinActivate, ahk_class FFXIVGAME
+			SetTimer, UpdateProgressBar, 100
 		}
 	}
 	UpdateMainWindow()
@@ -222,15 +227,15 @@ ReturnApplication() {
 
 SetPlayButtonsVisibility(visible) {
 	v := (visible ? 1 : 0)
-	GuiControl, Show%v%, StopControl
-	GuiControl, Show%v%, PlayPauseControl
+	GuiControl, PlayWindow:Show%v%, StopControl
+	GuiControl, PlayWindow:Show%v%, PlayPauseControl
 }
 
 SetPlayPauseButton(play) {
 	if(play) {
-		GuiControl,, PlayPauseControl, 4
+		GuiControl,PlayWindow:, PlayPauseControl, 4
 	} else {
-		GuiControl,, PlayPauseControl, `;
+		GuiControl,PlayWindow:, PlayPauseControl, `;
 	}
 }
 
@@ -287,6 +292,15 @@ MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 	}
 }
 
+UpdateProgressBar() {
+	if(currentPlayer) {
+		prog := Floor(currentPlayer.GetProgress() * 100)
+		GuiControl,PlayWindow:, SongProgressBar, % prog
+	} else {
+		GuiControl,PlayWindow:, SongProgressBar, 0
+	}
+}
+
 UpdateSelectedFile() {
 	text := currentPlayer.filename
 	if(currentPlayer.trackIndex > 0) {
@@ -305,6 +319,7 @@ UpdateSelectedFile() {
 }
 
 UpdateMainWindow() {
+	UpdateProgressBar()
 	SetPlayButtonsVisibility((currentPlayer != 0))
 	if(currentPlayer) {
 		text := ""
