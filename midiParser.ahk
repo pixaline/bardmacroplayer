@@ -205,6 +205,10 @@ class MidiTrack
 					; ???
 					name := readString(file, len)
 				}
+				else if(metaEvent == 0x0C) {
+					; ???
+					name := readString(file, len)
+				}
 				else if(metaEvent == 0x20) {
 					; chan prefix
 					port := file.ReadUCharType()
