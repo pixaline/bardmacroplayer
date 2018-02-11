@@ -115,11 +115,10 @@ class MidiTrack
 		if(InStr(this.trackName, "Piano") || true) {
 			this.trackNotes[this.trackNumNotes-1].deltaMs := dms
 			this.trackNotes.Push(new NoteEvent(note, channel))
-			this.trackNumNotes += 1
 		}
 	}
 	
-	ParseTrack(timeDivision, file) {
+	ParseTrack(timeDivision, file, parseNotes := true) {
 		if(!file)
 			return
 		id := file.Read(4)
@@ -263,7 +262,10 @@ class MidiTrack
 						if(vel != 0) {
 							del := this.lastNoteDelta * (60000 / (this.trackTempo * timeDivision))
 							this.lastNoteDelta := 0
-							this.NoteDown(note, channel, del)
+							if(parseNotes) {
+								this.NoteDown(note, channel, del)
+							}
+							this.trackNumNotes += 1
 						}
 						
 					} else if(lastStatus <= 0xAF) {
@@ -301,8 +303,8 @@ class MidiTrack
 		; MsgBox, %id% len %size% meventcnt %metaEventCount% and %midiEventCount%
 	}
 	
-	__New(timeDivision, file) {
-		this.ParseTrack(timeDivision, file)
+	__New(timeDivision, file, parseNotes) {
+		this.ParseTrack(timeDivision, file, parseNotes)
 		base.__New()
 	}
 }
@@ -326,24 +328,19 @@ class MidiFile
 		this.midiFormat := bytesToShort(this.midiFile)
 		this.midiNumTracks := bytesToShort(this.midiFile)
 		this.midiTimeDivision := bytesToShort(this.midiFile)
-		
-		len := this.midiFile.Length
-		fmt := this.midiFormat
-		nt := this.midiNumTracks
-		td := this.midiTimeDivision
-				
-		Loop %nt% {
-			this.midiTracks[A_Index] := new MidiTrack(td, this.midiFile)
-		}
-		
 		return true
 	}
 	
-	__New(filename) {
+	__New(filename, headerOnly := false, parseNotes := true) {
 		this.midiFile := FileOpen(filename, "r-d")
 		if(this.midiFile) {
 			size := this.midiFile.Length
 			this.ParseHeader()
+			if(!headerOnly) {
+				Loop % this.midiNumTracks {
+					this.midiTracks[A_Index] := new MidiTrack(this.midiTimeDivision, this.midiFile, parseNotes)
+				}
+			}
 			this.midiFile.Close()
 		}
 		if(size) {

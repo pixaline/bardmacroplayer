@@ -63,7 +63,7 @@ class TxtPlayer extends BasePlayer
 	}
 	
 	NextPlayTimer() {
-		if(this.noteIndex >= this.txt.numNotes) {
+		if(this.noteIndex >= this.GetNumNotes()) {
 			this.Stop()
 			
 		} else if(this.IsPlaying()) {
@@ -134,7 +134,7 @@ class MidiPlayer extends BasePlayer
 	}
 	
 	NextPlayTimer() {
-		if(this.noteIndex >= this.GetTrack().trackNumNotes) {
+		if(this.noteIndex >= this.GetNumNotes()) {
 			this.Stop()
 			
 		} else if(this.IsPlaying()) {

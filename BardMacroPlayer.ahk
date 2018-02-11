@@ -28,6 +28,8 @@ ReadSettings() {
 	}
 }
 
+global fileSelectionOpen
+
 global FileSelectionControl
 global FileLoadedControl
 global StopControl
@@ -120,6 +122,10 @@ MakeMainWindow() {
 	
 	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
+	
+	OnMessage(0x111, "MainWindowCommand")
+	OnMessage(0x203, "MainWindowDoubleClick")
+	OnMessage(0x201, "MainWindowDown")
 	
 	Menu, AppMenu, Add, Parsed keys, ShowParsedKeyboard
 	Menu, AppMenu, Add, Exit, ExitApplication
@@ -231,18 +237,40 @@ UpdateMidiDevices() {
 	}
 }
 
-UpdateMainWindow() {
-	UpdateFileList()
-	GuiControl,, FileSelectionControl, |
-	for i, e in playerFiles {
-		f := e
-		;if(InStr(e, "\")) {
-		;	f := StrSplit(e,"`\")
-		;	f := f[f.MaxIndex()]
-		;}
-		GuiControl,, FileSelectionControl, %f%
+MainWindowCommand(wParam, lParam) {
+	l := (wParam >> 16)
+	if(l == 7) {
+		fileSelectionOpen := true
 	}
-	
+	if(l == 8) {
+		fileSelectionOpen := false
+	}
+}
+MainWindowDoubleClick(wParam, lParam) {
+	if(A_GuiControl == "FileSelectionControl") {
+		if(fileSelectionOpen) {
+			return 0
+		}
+		MainWindowDown(wParam, lParam)
+	}
+}
+MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
+	if(A_GuiControl == "FileSelectionControl" && !fileSelectionOpen) {
+		GuiControl,, FileSelectionControl, Loading...||
+		fileSelectionOpen := true
+		UpdateFileList()
+		
+		VarSetCapacity(COMBOBOXINFO, (cbCOMBOBOXINFO := 40 + (A_PtrSize * 3)), 0)
+		NumPut(cbCOMBOBOXINFO, COMBOBOXINFO, 0, "UInt")
+		if (DllCall("GetComboBoxInfo", "Ptr", hwnd, "Ptr", &COMBOBOXINFO)) {
+			hwndList := NumGet(COMBOBOXINFO, cbCOMBOBOXINFO - A_PtrSize, "Ptr")
+			PostMessage, 0x202, % wParam, % lParam,, ahk_id %hwndList%
+			; Focus the list itself. This is because of possible large delays with updating file list.
+		}
+	}
+}
+
+UpdateMainWindow() {
 	SetPlayButtonsVisibility((currentPlayer != 0))
 	
 	if(currentPlayer) {
@@ -283,10 +311,10 @@ UpdateFileList() {
 	Loop, songs/* {
 		file := "songs/"A_LoopFileFullPath
 		if(A_LoopFileExt == "mid") {
-			midi := new MidiPlayer(file)
-			if(midi.midi.midiNumTracks > 1) {
-				Loop % midi.midi.midiNumTracks {
-					track := midi.midi.midiTracks[A_Index]
+			midi := new MidiFile(file, false, false)
+			if(midi.midiNumTracks > 1) {
+				Loop % midi.midiNumTracks {
+					track := midi.midiTracks[A_Index]
 					nn := track.trackNumNotes
 					if(nn > 0) {
 						sf := file . " "A_Index
@@ -301,6 +329,11 @@ UpdateFileList() {
 			; todo parse and check count
 			playerFiles.Push(file)
 		}
+	}
+	GuiControl,, FileSelectionControl, |
+	for i, e in playerFiles {
+		f := e
+		GuiControl,, FileSelectionControl, %f%
 	}
 }
 
