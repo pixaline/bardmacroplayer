@@ -91,7 +91,7 @@ MakeMainWindow() {
 	global MainHwnd
 	
 	playWidth := 250
-	playHeight := 70
+	playHeight := 90
 	
 	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop +E0x08000000
 	Gui, PlayWindow:+Owner +OwnDialogs
@@ -116,7 +116,12 @@ MakeMainWindow() {
 	
 	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
+	
+	Menu, FileMenu, Add, Exit, ExitApplication
+	Menu, MainMenu, Add, File, :FileMenu
+	Gui, Menu, MainMenu
 }
+
 LaunchGithub() {
 	Run https://github.com/parulina/bardmacroplayer
 }
@@ -200,6 +205,26 @@ SetPlayPauseButton(play) {
 	}
 }
 
+UpdateMidiDevices() {
+	if(MidiInModule) {
+		curDev := DllCall("midi_in.dll\getCurDevID", Int)
+		Menu, MidiMenu, Add, Empty, MidiMenuSelect
+		Menu, MidiMenu, Delete
+		Loop, % DllCall("midi_in.dll\getNumDevs") {
+			dev := A_Index-1
+			item := Format("opt{:d}", dev)
+			name := Format("[{:d}] {:s}", dev, DllCall("midi_in.dll\getDevName", Int,dev, Str))
+			
+			Menu, MidiMenu, Add, % item, MidiMenuSelect, +Radio
+			if(dev == curDev) {
+				Menu, MidiMenu, Check, % item
+			}
+			Menu, MidiMenu, Rename, % item, % name
+		}
+		Menu, MainMenu, Add, Midi devices, :MidiMenu
+	}
+}
+
 UpdateMainWindow() {
 	UpdateFileList()
 	GuiControl,, FileSelectionControl, |
@@ -273,6 +298,10 @@ UpdateFileList() {
 	}
 }
 
+MidiMenuSelect(name, pos) {
+	UseMidiDevice(pos - 1)
+}
+
 UseMidiDevice(device) {
 
 	DllCall("midi_in.dll\stop")
@@ -292,6 +321,7 @@ UseMidiDevice(device) {
 	msgNum := 0x2000
 	DllCall("midi_in.dll\listenNoteRange", int,36, int,72, int,0x00, int,0, int,msgNum)
 	OnMessage(msgNum, "PlayMidiInput")
+	UpdateMidiDevices()
 }
 
 ReadSettings()
