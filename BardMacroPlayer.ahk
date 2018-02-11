@@ -14,6 +14,23 @@ global MainHwnd
 
 global keybindFile := ""
 global playerFiles := []
+GetShortFile(i) {
+	filename := playerFiles[i]
+	track := -1
+	if(InStr(filename, ".mid ")) {
+		pos := InStr(filename, A_Space, false, 0, 1)
+		len := StrLen(filename)+1
+		track := SubStr(filename, pos+1, len - pos)
+		filename := SubStr(filename, 1, pos-1)
+	}
+	SplitPath, filename,,,,filename
+	if(track > 0) {
+		filename := Format("[T{:d}] ", track) . filename
+	}
+	filename := Format("{:03d} {:s}", i, filename)
+	return filename
+}
+
 global currentPlayer := 0
 global mainWindowState := false
 
@@ -270,21 +287,33 @@ MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 	}
 }
 
+UpdateSelectedFile() {
+	text := currentPlayer.filename
+	if(currentPlayer.trackIndex > 0) {
+		text .= " "currentPlayer.trackIndex
+	}
+	index := -1
+	for i, e in playerFiles {
+		if(e == text) {
+			index := i
+			break
+		}
+	}
+	if(index != -1) {
+		GuiControl, ChooseString, FileSelectionControl, % GetShortFile(i)
+	}
+}
+
 UpdateMainWindow() {
 	SetPlayButtonsVisibility((currentPlayer != 0))
-	
 	if(currentPlayer) {
-		text := currentPlayer.filename
-		fsc := text
-		
-		if(currentPlayer.trackIndex > 1) {
-			fsc .= " "currentPlayer.trackIndex
+		text := ""
+		UpdateSelectedFile()
+		if(currentPlayer.trackIndex > 0) {
+			text .= Format("Track {:d}`n", currentPlayer.trackIndex)
 		}
-		GuiControl, ChooseString, FileSelectionControl, % fsc
-		
-		if(currentPlayer.trackIndex != 1) {
-			text .= "`nTrack "
-			text .= currentPlayer.trackIndex
+		if(currentPlayer.GetNumNotes() > 1) {
+			text .= Format("Note count: {:d}`n", currentPlayer.GetNumNotes()-1)
 		}
 		GuiControl,, FileLoadedControl, % text
 		SetPlayPauseButton(!currentPlayer.playing)
@@ -308,15 +337,15 @@ LoadMusicFile() {
 
 UpdateFileList() {
 	playerFiles := []
-	Loop, songs/* {
-		file := "songs/"A_LoopFileFullPath
+	Loop, songs\* {
+		file := A_LoopFileFullPath
 		if(A_LoopFileExt == "mid") {
 			midi := new MidiFile(file, false, false)
 			if(midi.midiNumTracks > 1) {
 				Loop % midi.midiNumTracks {
 					track := midi.midiTracks[A_Index]
 					nn := track.trackNumNotes
-					if(nn > 0) {
+					if(nn > 1) {
 						sf := file . " "A_Index
 						playerFiles.Push(sf)
 					}
@@ -332,9 +361,10 @@ UpdateFileList() {
 	}
 	GuiControl,, FileSelectionControl, |
 	for i, e in playerFiles {
-		f := e
+		f := GetShortFile(i)
 		GuiControl,, FileSelectionControl, %f%
 	}
+	UpdateSelectedFile()
 }
 
 MidiMenuSelect(name, pos) {

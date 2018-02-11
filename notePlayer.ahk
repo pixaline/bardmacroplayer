@@ -9,7 +9,6 @@ class BasePlayer
 	noteIndex := 1
 	noteCallback := 0
 	updateCallback := 0
-	trackIndex := 1
 	
 	Play() {
 		this.playing := true
@@ -49,10 +48,15 @@ class BasePlayer
 class TxtPlayer extends BasePlayer
 {
 	txt := 0
+	trackIndex := 0
 	
 	Play() {
 		base.Play()
 		this.NextPlayTimer()
+	}
+	
+	GetNumNotes() {
+		return this.txt.numNotes
 	}
 	
 	GetNote(note := -1) {
@@ -115,6 +119,10 @@ class MidiPlayer extends BasePlayer
 			return
 		track := this.midi.midiTracks[this.trackIndex]
 		return track
+	}
+	
+	GetNumNotes() {
+		return this.GetTrack().trackNumNotes
 	}
 	
 	GetNote(note := -1) {
