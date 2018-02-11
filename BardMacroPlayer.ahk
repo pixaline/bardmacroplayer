@@ -16,8 +16,6 @@ global keybindFile := ""
 global playerFiles := []
 global currentPlayer := 0
 global mainWindowState := false
-global mainWindowX := 0
-global mainWindowY := 0
 
 global settings := {ExitConfirmation: 1, HideHotkey: "Insert"}
 ReadSettings() {
@@ -44,6 +42,12 @@ IfExist, %trayIcon%
 #Include notePlayer.ahk
 
 ShowParsedKeyboard() {
+	WinGetPos, mainWindowX, mainWindowY, mainWindowWidth, mainWindowHeight, ahk_id %MainHwnd%
+	ww := 170
+	hh := 70
+	xx := mainWindowX + mainWindowWidth/2 - ww/2
+	yy := mainWindowY + mainWindowHeight/2 - hh/2
+	
 	sharps := [NoteKeys["C#"], NoteKeys["Eb"], NoteKeys["F#"], NoteKeys["G#"], NoteKeys["Bb"]]
 	keys := [NoteKeys["C"], NoteKeys["D"], NoteKeys["E"], NoteKeys["F"], NoteKeys["G"], NoteKeys["A"], NoteKeys["B"]]
 	
@@ -66,7 +70,7 @@ ShowParsedKeyboard() {
 	Gui, Add, Button, Disabled x110 y40 w20, % keys[6]
 	Gui, Add, Button, Disabled x130 y40 w20, % keys[7]
 	
-	Gui, KeyboardWindow: Show
+	Gui, KeyboardWindow: Show, x%xx% y%yy% w%ww% h%hh%, Keys
 }
 
 ToggleMainWindow() {
@@ -98,7 +102,7 @@ MakeMainWindow() {
 	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player %Version%
 	
 	if(WinExist("ahk_class FFXIVGAME") != 0x00) {
-		ControlGetPos, ffxivX, ffxivY, ffxivWidth, ffxivHeight,, ahk_class FFXIVGAME
+		WinGetPos, ffxivX, ffxivY, ffxivWidth, ffxivHeight, ahk_class FFXIVGAME
 		mainWindowX := (ffxivX + ffxivWidth - playWidth * 2)
 		mainWindowY := (ffxivY + ffxivHeight / 2 - playHeight * 2)
 		Gui, PlayWindow: Show, Hide x%mainWindowX% y%mainWindowY%
@@ -117,8 +121,9 @@ MakeMainWindow() {
 	Gui, Add, Slider, ToolTip Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y60 w80, 0
 	Gui, Add, Text, x190 y56 cBlue gLaunchGithub, Project site
 	
-	Menu, FileMenu, Add, Exit, ExitApplication
-	Menu, MainMenu, Add, File, :FileMenu
+	Menu, AppMenu, Add, Parsed keys, ShowParsedKeyboard
+	Menu, AppMenu, Add, Exit, ExitApplication
+	Menu, MainMenu, Add, App, :AppMenu
 	Gui, Menu, MainMenu
 }
 
@@ -156,14 +161,15 @@ PlayWindowGuiEscape() {
 }
 PlayWindowGuiClose() {
 	if(settings["ExitConfirmation"]) {
+		WinGetPos, mainWindowX, mainWindowY, mainWindowWidth, mainWindowHeight, ahk_id %MainHwnd%
+		ww := 90
+		hh := 50
+		xx := mainWindowX + mainWindowWidth/2 - ww/2
+		yy := mainWindowY + mainWindowHeight/2 - hh/2
+		
 		Gui, ExitWindow: Destroy
 		Gui, ExitWindow: New, +OwnerPlayWindow +AlwaysOnTop +ToolWindow
-		Gui, ExitWindow: Show, w90 h50, Exit
-		if(WinExist("ahk_class FFXIVGAME") != 0x00) {
-			xx := mainWindowX + 180
-			yy := mainWindowY + 10
-			Gui, ExitWindow: Show, x%xx% y%yy%
-		}
+		Gui, ExitWindow: Show, x%xx% y%yy% w%ww% h%hh%, Exit
 		Gui, Add, Text, Section, Exit player?
 		Gui, Add, Button, xs Section Default gExitApplication, Yes
 		Gui, Add, Button, ys gReturnApplication, No
