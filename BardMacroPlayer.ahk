@@ -294,6 +294,20 @@ MainWindowDoubleClick(wParam, lParam) {
 }
 MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 	ToolTip,,,, 1
+	if(A_GuiControl) {
+		ctl := %A_GuiControl%
+	}
+	if(A_GuiControl == "SongProgressBar") {
+		ControlGetPos, progX, progY, progWidth, progHeight, %ctl%, ahk_id %hwnd%
+		MouseGetPos, mouseX, mouseY
+		if(mouseX > progX && mouseX < progX+progWidth) {
+			if(mouseY > progY && mouseY < progY+progHeight) {
+				perc := (mouseX - progX) / progWidth
+				currentPlayer.SetProgress(perc)
+				;ToolTip, % Format("POS: {:d}", perc*100)
+			}
+		}
+	}
 	if(A_GuiControl == "FileSelectionControl" && !fileSelectionOpen) {
 		GuiControl,, FileSelectionControl, Loading...||
 		fileSelectionOpen := true
