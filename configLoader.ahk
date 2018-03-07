@@ -27,9 +27,9 @@ SelectKeybindsFile()
 			}
 		}
 	}
-	filename := keybindFiles[keybindFIles.MaxIndex()]
+	filename := keybindFiles[keybindFiles.MaxIndex()]
 	if(numKeybinds > 1) {
-		MsgBox, Lots of keybinds (%numKeybinds%). Choosing the most recent one.`n%filename%
+		;MsgBox, 64, Multiple keybinds, Multiple KEYBIND.DAT files found (%numKeybinds%).`nChoosing the most recent one. Check parsed key layout in App > Parsed keys.`n`n[%filename%]
 	}
 	return filename
 }
