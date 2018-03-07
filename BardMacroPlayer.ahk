@@ -7,6 +7,7 @@ SendMode Event
 global NoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
 global BardRange := ["C-1", "C#-1", "D-1", "Eb-1", "E-1", "F-1", "F#-1", "G-1", "G#-1", "A-1", "Bb-1", "B-1", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B", "C+1", "C#+1", "D+1", "Eb+1", "E+1", "F+1", "F#+1", "G+1", "G#+1", "A+1", "Bb+1", "B+1", "C+2"]
 global OctaveShift := 0
+global SpeedShift := 10
 
 global Version := "v1.2"
 global MidiInModule
@@ -115,7 +116,9 @@ MakeMainWindow() {
 	global MainHwnd
 	
 	playWidth := 250
-	playHeight := 95
+	playHeight := 115
+	
+	sliderWidth := 75
 	
 	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop
 	Gui, PlayWindow:+Owner +OwnDialogs
@@ -134,12 +137,12 @@ MakeMainWindow() {
 	Gui, Font, s18, Webdings
 	Gui, Add, Button, Hide xs Section w30 h30 vStopControl gStopSubmit, <
 	Gui, Add, Button, Hide ys w30 h30 vPlayPauseControl gPausePlaySubmit, `;
+	Gui, Add, Slider, xs Thick10 vOctaveShift gOctaveSlider Range-4-4 w%sliderWidth% h10, 0
+	Gui, Add, Slider, xs Thick10 vSpeedShift gSpeedSlider Range0-20 w%sliderWidth% h10, 10
 	
 	Gui, Font, s8 w400, Segoe UI
-	Gui, Add, Text, ys w180 vFileLoadedControl, [ Bard Macro Player %Version% ]`n by Freya Katva @ Ultros
-	
-	Gui, Add, Slider, ToolTip Section Thick10 vOctaveShift gOctaveSlider Range-4-4 x0 y65 w80, 0
-	Gui, Add, Progress, ys w150 h8 c222222 BackgroundCCCCCC vSongProgressBar
+	Gui, Add, Text, Section ys w180 h45 vFileLoadedControl, [ Bard Macro Player %Version% ]`n by Freya Katva @ Ultros
+	Gui, Add, Progress, xs w150 h10 c222222 BackgroundCCCCCC vSongProgressBar
 	
 	OnMessage(0x111, "MainWindowCommand")
 	OnMessage(0x203, "MainWindowDoubleClick")
@@ -159,6 +162,19 @@ OctaveSlider() {
 	Gui, Submit, NoHide
 	if(currentPlayer) {
 		currentPlayer.octaveShift := OctaveShift
+		text := Format("Octave shift: {:d}", currentPlayer.octaveShift)
+		ToolTip, % text ,,, 1
+	}
+}
+SpeedSlider() {
+	Gui, Submit, NoHide
+	if(currentPlayer) {
+		if(SpeedShift < 1) {
+			SpeedShift := 1
+		}
+		currentPlayer.speedShift := SpeedShift / 10
+		text := Format("Speed shift: {:d}%", SpeedShift * 10)
+		ToolTip, % text ,,, 1
 	}
 }
 StopSubmit() {
@@ -277,6 +293,7 @@ MainWindowDoubleClick(wParam, lParam) {
 	}
 }
 MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
+	ToolTip,,,, 1
 	if(A_GuiControl == "FileSelectionControl" && !fileSelectionOpen) {
 		GuiControl,, FileSelectionControl, Loading...||
 		fileSelectionOpen := true
@@ -446,6 +463,8 @@ LoadFile(file, track := 1) {
 	if(currentPlayer) {
 		currentPlayer.noteCallback := Func("PlayNoteCallback")
 		currentPlayer.updateCallback := Func("UpdateMainWindow")
+		currentPlayer.octaveShift := OctaveShift
+		currentPlayer.speedShift := SpeedShift
 	}
 	UpdateMainWindow()
 }

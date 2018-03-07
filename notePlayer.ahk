@@ -10,6 +10,9 @@ class BasePlayer
 	noteCallback := 0
 	updateCallback := 0
 	
+	octaveShift := 0
+	speedShift := 1
+	
 	Play() {
 		this.playing := true
 		this.updateCallback.Call()
@@ -80,7 +83,7 @@ class TxtPlayer extends BasePlayer
 				return
 			}
 			note := this.GetNote()
-			ms := -Abs(note.deltaMs)
+			ms := -Abs(note.deltaMs) / this.speedShift
 			obj := this.playObject
 			SetTimer % obj, Delete
 			SetTimer % obj, % ms
@@ -109,7 +112,6 @@ class MidiPlayer extends BasePlayer
 {
 	midi := 0
 	trackIndex := 1
-	octaveShift := 0
 	
 	Play() {
 		base.Play()
@@ -155,7 +157,7 @@ class MidiPlayer extends BasePlayer
 		} else if(this.IsPlaying()) {
 			note := this.GetNote()
 			base.PlayNote(note.GetNoteLetter(this.octaveShift))
-			ms := -Abs(note.deltaMs)
+			ms := -Abs(note.deltaMs) / this.speedShift
 			obj := this.playObject
 			SetTimer % obj, % ms, -1
 		}
