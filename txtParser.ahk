@@ -19,6 +19,9 @@ class TxtFile
 			while(!file.AtEOF) {
 				s := RegExReplace(file.ReadLine(), "\r\n$","")
 				i := SubStr(s, 1, 1)
+				if(i == ";") {
+					continue
+				}
 				if(i == "p") {
 					pauseMs := SubStr(s, 2)
 					continue
