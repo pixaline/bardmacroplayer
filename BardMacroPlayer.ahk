@@ -510,7 +510,7 @@ LoadFile(file, track := 1) {
 		currentPlayer.noteCallback := Func("PlayNoteCallback")
 		currentPlayer.updateCallback := Func("UpdateMainWindow")
 		currentPlayer.octaveShift := OctaveShift
-		currentPlayer.speedShift := SpeedShift
+		currentPlayer.speedShift := SpeedShift / 10
 	}
 	UpdateMainWindow()
 }
