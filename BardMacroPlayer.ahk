@@ -35,14 +35,19 @@ GetShortFile(i) {
 global currentPlayer := 0
 global mainWindowState := false
 
-global settings := {ExitConfirmation: 1, HideHotkey: "Insert"}
+global settings := {ExitConfirmation: 1, HideHotkey: "Insert", LastKeybind: ""}
 ReadSettings() {
-	Loop, Read, BardMacroPlayer.ini
-	{
-		spl := StrSplit(A_LoopReadLine, "=")
-		t := spl[1]
-		d := spl[2]
-		settings[t] := d
+	for i, e in settings {
+		IniRead, tempVal, BardMacroPlayer.ini, App, % i, % e
+		if(tempVal != "ERROR") {
+			settings[i] := tempVal
+		}
+	}
+}
+
+WriteSettings() {
+	for i, e in settings {
+		IniWrite, % e, BardMacroPlayer.ini, App, % i
 	}
 }
 
