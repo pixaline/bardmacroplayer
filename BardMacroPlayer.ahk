@@ -58,6 +58,7 @@ global FileSelectionControl
 global FileLoadedControl
 global StopControl
 global PlayPauseControl
+global LayoutControl
 
 global trayIcon := "bard.ico"
 ICON [trayIcon]
@@ -69,8 +70,8 @@ IfExist, %trayIcon%
 
 ShowParsedKeyboard() {
 	WinGetPos, mainWindowX, mainWindowY, mainWindowWidth, mainWindowHeight, ahk_id %MainHwnd%
-	ww := 170
-	hh := 70
+	ww := 180
+	hh := 110
 	xx := mainWindowX + mainWindowWidth/2 - ww/2
 	yy := mainWindowY + mainWindowHeight/2 - hh/2
 	
@@ -81,22 +82,48 @@ ShowParsedKeyboard() {
 	
 	Gui, Font, s8, Consolas
 	
-	Gui, Add, Text, x20 y2, ** Parsed piano keys **
-	Gui, Add, Button, Disabled x20 y20 w20,  % sharps[1]
-	Gui, Add, Button, Disabled x40 y20 w20,  % sharps[2]
-	Gui, Add, Button, Disabled x80 y20 w20,  % sharps[3]
-	Gui, Add, Button, Disabled x100 y20 w20, % sharps[4]
-	Gui, Add, Button, Disabled x120 y20 w20, % sharps[5]
+	Gui, Add, DropDownList, w%ww% x0 ym-3 vLayoutControl gSelectLayout, Automatic||
+	for i, e in keybindFiles {
+		found := RegExMatch(e, "FFXIV_CHR[A-Z0-9]+", ffxivChar)
+		if(found) {
+			if(ffxivChar == settings["LastKeybind"]) {
+				ffxivChar := ffxivChar . "||"
+			}
+			GuiControl,, LayoutControl, %ffxivChar%
+		}
+	}
+	row1 := 50
+	row2 := (row1 + 20)
 	
-	Gui, Add, Button, Disabled x10 y40 w20,  % keys[1]
-	Gui, Add, Button, Disabled x30 y40 w20,  % keys[2]
-	Gui, Add, Button, Disabled x50 y40 w20,  % keys[3]
-	Gui, Add, Button, Disabled x70 y40 w20,  % keys[4]
-	Gui, Add, Button, Disabled x90 y40 w20,  % keys[5]
-	Gui, Add, Button, Disabled x110 y40 w20, % keys[6]
-	Gui, Add, Button, Disabled x130 y40 w20, % keys[7]
+	Gui, Add, Text, x20, ** Parsed piano keys **
+	Gui, Add, Button, Disabled x20 y%row1% w20,  % sharps[1]
+	Gui, Add, Button, Disabled x40 y%row1% w20,  % sharps[2]
+	Gui, Add, Button, Disabled x80 y%row1% w20,  % sharps[3]
+	Gui, Add, Button, Disabled x100 y%row1% w20, % sharps[4]
+	Gui, Add, Button, Disabled x120 y%row1% w20, % sharps[5]
+	
+	Gui, Add, Button, Disabled x10 y%row2% w20,  % keys[1]
+	Gui, Add, Button, Disabled x30 y%row2% w20,  % keys[2]
+	Gui, Add, Button, Disabled x50 y%row2% w20,  % keys[3]
+	Gui, Add, Button, Disabled x70 y%row2% w20,  % keys[4]
+	Gui, Add, Button, Disabled x90 y%row2% w20,  % keys[5]
+	Gui, Add, Button, Disabled x110 y%row2% w20, % keys[6]
+	Gui, Add, Button, Disabled x130 y%row2% w20, % keys[7]
 	
 	Gui, KeyboardWindow: Show, x%xx% y%yy% w%ww% h%hh%, Keys
+}
+
+SelectLayout() {
+	Gui, Submit, NoHide
+	
+	keybindFile := LayoutControl
+	if(keybindFile == "Automatic"){
+		keybindFile := ""
+	}
+	
+	settings["LastKeybind"] := keybindFile
+	WriteSettings()
+	ReadKeyConfig()
 }
 
 ToggleMainWindow() {

@@ -9,29 +9,44 @@ ToUnixTimestamp(T) {
 	
 	Return (31536000*(Y-1970) + (D+Floor((Y-1972)/4))*86400 + H*3600 + M*60 + S)
 }
+global keybindFiles := {}
+global selectedKeybind
+	
 SelectKeybindsFile()
 {
 	ffxivPath := A_MyDocuments . "\My Games\FINAL FANTASY XIV - A Realm Reborn\FFXIV_CHR*"
 	keybindFiles := {}
+	keybindToSelect := -1
+	keybindSetting := settings["LastKeybind"]
 	numKeybinds := 0
+	
 	Loop, %ffxivPath%, 2
 	{
 		chrPath := A_LoopFileFullPath . "\KEYBIND.DAT"
 		Loop %chrPath%, 1
 		{
 			if(readKeybinds(A_LoopFileFullPath)["PERFORMANCE_MODE_C4"].key1) {
-				FileGetTime, FileMod, A_LoopFileFullPath, A
+				FileGetTime, FileMod, % A_LoopFileFullPath, A
 				FileMod := ToUnixTimestamp(FileMod)
 				keybindFiles[FileMod] := A_LoopFileFullPath
+				
+				if(keybindSetting != "" && keybindToSelect == -1) {
+					found := RegExMatch(A_LoopFileFullPath, "FFXIV_CHR[A-Z0-9]+", ffxivChar)
+					if(found && keybindSetting == ffxivChar) {
+						keybindToSelect := %FileMod%
+					}
+				}
 				numKeybinds += 1
 			}
 		}
 	}
-	filename := keybindFiles[keybindFiles.MaxIndex()]
-	if(numKeybinds > 1) {
-		;MsgBox, 64, Multiple keybinds, Multiple KEYBIND.DAT files found (%numKeybinds%).`nChoosing the most recent one. Check parsed key layout in App > Parsed keys.`n`n[%filename%]
+	if(keybindToSelect == -1) {
+		; Just pick the last modified keybind file by default
+		selectedKeybind := keybindFiles[keybindFiles.MaxIndex()]
+	} else {
+		selectedKeybind := keybindFiles[keybindToSelect]
 	}
-	return filename
+	return selectedKeybind
 }
 
 KeyModToLabel(mod)
