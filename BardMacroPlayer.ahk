@@ -115,6 +115,7 @@ ShowParsedKeyboard() {
 
 SelectLayout() {
 	Gui, Submit, NoHide
+	Gui, KeyboardWindow: Destroy
 	
 	keybindFile := LayoutControl
 	if(keybindFile == "Automatic"){
@@ -124,6 +125,8 @@ SelectLayout() {
 	settings["LastKeybind"] := keybindFile
 	WriteSettings()
 	ReadKeyConfig()
+	
+	ShowParsedKeyboard()
 }
 
 ToggleMainWindow() {

@@ -26,14 +26,14 @@ SelectKeybindsFile()
 		Loop %chrPath%, 1
 		{
 			if(readKeybinds(A_LoopFileFullPath)["PERFORMANCE_MODE_C4"].key1) {
-				FileGetTime, FileMod, % A_LoopFileFullPath, A
+				FileGetTime, FileMod, % A_LoopFileFullPath, M
 				FileMod := ToUnixTimestamp(FileMod)
 				keybindFiles[FileMod] := A_LoopFileFullPath
 				
 				if(keybindSetting != "" && keybindToSelect == -1) {
 					found := RegExMatch(A_LoopFileFullPath, "FFXIV_CHR[A-Z0-9]+", ffxivChar)
 					if(found && keybindSetting == ffxivChar) {
-						keybindToSelect := %FileMod%
+						keybindToSelect := FileMod
 					}
 				}
 				numKeybinds += 1
