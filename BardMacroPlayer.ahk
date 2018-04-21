@@ -35,7 +35,7 @@ GetShortFile(i) {
 global currentPlayer := 0
 global mainWindowState := false
 
-global settings := {ExitConfirmation: 1, HideHotkey: "Insert", LastKeybind: ""}
+global settings := {ExitConfirmation: 1, HideHotkey: "Insert", LastKeybind: "", ShortcutStop: "F6", ShortcutPlay: "F7"}
 ReadSettings() {
 	for i, e in settings {
 		IniRead, tempVal, BardMacroPlayer.ini, App, % i, % e
@@ -477,10 +477,9 @@ UseMidiDevice(device) {
 ReadSettings()
 ToggleMainWindow()
 ReadKeyConfig()
-if(GetKeyState("Shift", "P")) {
-	ShowParsedKeyboard()
-}
 Hotkey, % settings["HideHotkey"], ToggleWindow
+Hotkey, % settings["ShortcutStop"], StopSubmit
+Hotkey, % settings["ShortcutPlay"], PausePlaySubmit
 
 if((MidiInModule := DllCall("LoadLibrary", Str,"midi_in.dll")) != 0) {
 	if((devs := DllCall("midi_in.dll\getNumDevs")) > 0) {
