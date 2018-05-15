@@ -347,7 +347,7 @@ MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 			if(mouseY > progY && mouseY < progY+progHeight) {
 				perc := (mouseX - progX) / progWidth
 				currentPlayer.SetProgress(perc)
-				;ToolTip, % Format("POS: {:d}", perc*100)
+				UpdateProgressBar()
 			}
 		}
 	}
