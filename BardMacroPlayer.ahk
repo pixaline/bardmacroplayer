@@ -9,7 +9,8 @@ global BardRange := ["C-1", "C#-1", "D-1", "Eb-1", "E-1", "F-1", "F#-1", "G-1", 
 global OctaveShift := 0
 global SpeedShift := 10
 
-global Version := "v1.2"
+global curVersion = 1.3
+global Version := Format("v{:g}", curVersion)
 global MidiInModule
 global MainHwnd
 
@@ -67,6 +68,7 @@ IfExist, %trayIcon%
 
 #Include configLoader.ahk
 #Include notePlayer.ahk
+#Include JSON.ahk
 
 ShowParsedKeyboard() {
 	WinGetPos, mainWindowX, mainWindowY, mainWindowWidth, mainWindowHeight, ahk_id %MainHwnd%
@@ -192,6 +194,12 @@ MakeMainWindow() {
 
 LaunchGithub() {
 	Run https://github.com/parulina/bardmacroplayer
+}
+LaunchGithubReleases() {
+	Run https://github.com/parulina/bardmacroplayer/releases
+	GuiControl, +g, FileLoadedControl, 0
+	Gui, Font, cBlack
+	GuiControl, Font, FileLoadedControl
 }
 OctaveSlider() {
 	Gui, Submit, NoHide
@@ -474,9 +482,42 @@ UseMidiDevice(device) {
 	UpdateMidiDevices()
 }
 
+req := ComObjCreate("Msxml2.XMLHTTP")
+CheckUpdate() {
+	global req
+	req.open("GET", "https://api.github.com/repos/parulina/bardmacroplayer/releases/latest", true)
+	req.onreadystatechange := Func("CheckUpdateEnd")
+	req.send()
+}
+
+CheckUpdateEnd() {
+	global req
+	if (req.readyState != 4) {
+		return
+	}
+	if (req.status != 200) {
+		return
+	}
+	json := JSON.Load(req.responseText)
+	if(json) {
+		found := RegExMatch(json.tag_name, "v(\d\.\d+)", newVersion)
+		if(found) {
+			if(newVersion1 > curVersion) {
+				GuiControl,, FileLoadedControl, [ New version %newVersion1% available! ]`n by Freya Katva @ Ultros
+				Gui, Font, cRed
+				GuiControl, Font, FileLoadedControl
+				
+				f := Func("LaunchGithubReleases")
+				GuiControl, +g, FileLoadedControl, % f
+			}
+		}
+	}
+}
+
 ReadSettings()
 ToggleMainWindow()
 ReadKeyConfig()
+CheckUpdate()
 Hotkey, % settings["HideHotkey"], ToggleWindow
 Hotkey, % settings["ShortcutStop"], StopSubmit
 Hotkey, % settings["ShortcutPlay"], PausePlaySubmit
