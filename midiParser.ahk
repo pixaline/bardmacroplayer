@@ -87,6 +87,7 @@ class NoteEvent
 	note := ""
 	channel := 0
 	deltaMs := 0
+	heldMs := 100
 	
 	GetNoteLetter(octaveOffset := 0) {
 		return BardRange[(this.note + 1) - 12 * (3 - octaveOffset)]
@@ -100,11 +101,25 @@ class NoteEvent
 	}
 }
 
+class NoteHeldEvent {
+	key := 0
+	heldMs := 0
+	
+	__New(k, ms) {
+		this.key := k
+		this.heldMs := ms
+	}
+	Get(ms) {
+		return (ms - this.heldMs)
+	}
+}
+
 class MidiTrack
 {
 	trackName := ""
 	trackTempo := 120
 	trackNotes := []
+	trackNotesHeld := {}
 	trackNumNotes := 1
 	
 	lastNoteDelta := 0
@@ -112,12 +127,16 @@ class MidiTrack
 	
 	
 	NoteDown(note, channel, dms) {
-		if(InStr(this.trackName, "Piano") || true) {
-			this.trackNotes[this.trackNumNotes-1].deltaMs := dms
-			this.trackNotes.Push(new NoteEvent(note, channel))
-		}
+		this.trackNotes[this.trackNumNotes-1].deltaMs := dms
+		this.trackNotes.Push(new NoteEvent(note, channel))
+		return this.trackNumNotes
 	}
-	
+	NoteUp(note, channel, dms) {
+		; note is slot here
+		this.trackNotes[note].heldMs := dms
+		;MsgBox, %note% lasted %dms%
+	}
+
 	ParseTrack(timeDivision, file, parseNotes := true) {
 		if(!file)
 			return
@@ -128,13 +147,15 @@ class MidiTrack
 		size := bytesToInt(file)
 		
 		; begin reading data
-		
 		metaEventCount := 0
 		midiEventCount := 0
 		while(size > 0) {
 			pos := file.Pos
 			deltaCount := readDeltaByteCount(file)
-			delta := readVarSize(file, deltaCount)
+			delta := 0
+			if(deltaCount) {
+				delta := readVarSize(file, deltaCount)
+			}
 			
 			event := file.ReadUCharType()
 			if(lastStatus >= 0x80 && event < 0x80) {
@@ -231,6 +252,10 @@ class MidiTrack
 					sf := file.ReadUCharType()
 					mi := file.ReadUCharType()
 				}
+				else if(metaEvent == 0x7F) {
+					; sequencer specific event
+					data := file.Read(len)
+				}
 				else {
 					data := file.Read(len)
 					pos := file.Pos
@@ -248,26 +273,39 @@ class MidiTrack
 					lastStatus := event
 					this.lastNoteDelta += delta
 					this.totalDelta += delta
+					totalDeltaMs := this.totalDelta * (60000 / (this.trackTempo * timeDivision))
+					
 					if(lastStatus <= 0x8F) {
 						; Note off
 						note := file.ReadUCharType()
 						vel := file.ReadUCharType()
 						channel := lastStatus - 0x80 + 1
+						if(parseNotes) {
+							held := this.trackNotesHeld[note]
+							this.NoteUp(held.key, channel, held.Get(totalDeltaMs))
+							this.trackNotesHeld[note] := 0
+						}
 						
 					} else if(lastStatus <= 0x9F) {
 						; Note on
 						note := file.ReadUCharType()
 						vel := file.ReadUCharType()
 						channel := lastStatus - 0x90 + 1
-						if(vel != 0) {
-							del := this.lastNoteDelta * (60000 / (this.trackTempo * timeDivision))
-							this.lastNoteDelta := 0
-							if(parseNotes) {
-								this.NoteDown(note, channel, del)
+						del := this.lastNoteDelta * (60000 / (this.trackTempo * timeDivision))
+						if(parseNotes) {
+							if(vel != 0) {
+								this.lastNoteDelta := 0
+								key := this.NoteDown(note, channel, del)
+								this.trackNotesHeld[note] := new NoteHeldEvent(key, totalDeltaMs)
+							} else {
+								held := this.trackNotesHeld[note]
+								this.NoteUp(held.key, channel, held.Get(totalDeltaMs))
+								this.trackNotesHeld[note] := 0
 							}
+						}
+						if(vel != 0) {
 							this.trackNumNotes += 1
 						}
-						
 					} else if(lastStatus <= 0xAF) {
 						; poly key pressure
 						note := file.ReadUCharType()

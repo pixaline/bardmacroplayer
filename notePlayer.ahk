@@ -38,8 +38,8 @@ class BasePlayer
 		this.noteIndex += 1
 	}
 	
-	PlayNote(note) {
-		this.noteCallback.Call(note)
+	PlayNote(note, ms := 100) {
+		this.noteCallback.Call(note, ms)
 	}
 	
 	__New(){
@@ -84,21 +84,16 @@ class TxtPlayer extends BasePlayer
 			this.Stop()
 			
 		} else if(this.IsPlaying()) {
-			if(this.noteIndex == 1) {
-				this.PlayLoop()
-				return
-			}
 			note := this.GetNote()
 			ms := -Abs(note.deltaMs) / this.speedShift
 			obj := this.playObject
-			SetTimer % obj, Delete
-			SetTimer % obj, % ms
+			base.PlayNote(this.GetNote().note, this.GetNote().heldMs)
+			SetTimer % obj, % ms, -1
 		}
 	}
 	
 	PlayLoop() {
 		if(base.IsPlaying()) {
-			base.PlayNote(this.GetNote().note)
 			base.NextPlayTimer()
 			this.NextPlayTimer()
 		}
@@ -168,7 +163,7 @@ class MidiPlayer extends BasePlayer
 			
 		} else if(this.IsPlaying()) {
 			note := this.GetNote()
-			base.PlayNote(note.GetNoteLetter(this.octaveShift))
+			base.PlayNote(note.GetNoteLetter(this.octaveShift), note.heldMs)
 			ms := -Abs(note.deltaMs) / this.speedShift
 			obj := this.playObject
 			SetTimer % obj, % ms, -1

@@ -2,6 +2,7 @@
 class txtNote {
 	note := ""
 	deltaMs := 0
+	heldMs := 0
 }
 
 class TxtFile
@@ -15,6 +16,7 @@ class TxtFile
 		if(file) {
 			msTemp := 0
 			pauseMs := 100
+			holdMs := 100
 			delay := 0
 			while(!file.AtEOF) {
 				s := RegExReplace(file.ReadLine(), "\r\n$","")
@@ -30,6 +32,10 @@ class TxtFile
 					delay := SubStr(s, 2)
 					continue
 				}
+				if(i == "h") {
+					holdMs := SubStr(s, 2)
+					continue
+				}
 				Loop, parse, s, %A_Space%
 				{
 					if(InStr(A_LoopField, "/")) {
@@ -42,10 +48,24 @@ class TxtFile
 						msTemp += pauseMs * n
 					}
 					else if(Ord(A_LoopField) > 32) {
+						nstr := A_LoopField
+						hms := note.heldMs
+						
+						ppos := InStr(nstr, ",")
+						if(ppos) {
+							; single note delay
+							hms := SubStr(nstr, ppos+1)
+							nstr := SubStr(nstr, 1, ppos-1)
+						} else {
+							hms := holdMs
+						}
+						
 						; Parse as note
 						note := new txtNote()
-						note.note := A_LoopField
+						note.note := nstr
 						note.deltaMs := msTemp + delay
+						note.heldMs := hms
+						
 						msTemp := 0
 						this.notes.Push(note)
 						this.numNotes += 1

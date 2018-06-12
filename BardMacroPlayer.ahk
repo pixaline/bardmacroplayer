@@ -1,10 +1,10 @@
 #NoTrayIcon
 
-SetKeyDelay, 0, 30
 SendMode Event
 
 ; default note keys
-global NoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
+global DefaultNoteKeys := {"C":"q","C#":"2","D":"w","Eb":"3","E":"e","F":"r","F#":"5","G":"t","G#":"6","A":"y","Bb":"7","B":"u","C+1":"i"}
+global NoteKeys := {}
 global BardRange := ["C-1", "C#-1", "D-1", "Eb-1", "E-1", "F-1", "F#-1", "G-1", "G#-1", "A-1", "Bb-1", "B-1", "C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B", "C+1", "C#+1", "D+1", "Eb+1", "E+1", "F+1", "F#+1", "G+1", "G#+1", "A+1", "Bb+1", "B+1", "C+2"]
 global OctaveShift := 0
 global SpeedShift := 10
@@ -77,8 +77,8 @@ ShowParsedKeyboard() {
 	xx := mainWindowX + mainWindowWidth/2 - ww/2
 	yy := mainWindowY + mainWindowHeight/2 - hh/2
 	
-	sharps := [NoteKeys["C#"], NoteKeys["Eb"], NoteKeys["F#"], NoteKeys["G#"], NoteKeys["Bb"]]
-	keys := [NoteKeys["C"], NoteKeys["D"], NoteKeys["E"], NoteKeys["F"], NoteKeys["G"], NoteKeys["A"], NoteKeys["B"]]
+	sharps := [NoteKeys["C#"].key, NoteKeys["Eb"].key, NoteKeys["F#"].key, NoteKeys["G#"].key, NoteKeys["Bb"].key]
+	keys := [NoteKeys["C"].key, NoteKeys["D"].key, NoteKeys["E"].key, NoteKeys["F"].key, NoteKeys["G"].key, NoteKeys["A"].key, NoteKeys["B"].key]
 	
 	Gui, KeyboardWindow: New, +ToolWindow +AlwaysOnTop
 	
@@ -561,17 +561,36 @@ LoadFile(file, track := 1) {
 PlayMidiInput(note, vel) {
 	if(vel) {
 		noteLetter := BardRange[(note + 1 -(12 * (3 - OctaveShift)))]
-		PlayNoteCallback(noteLetter)
+		PlayNoteCallback(noteLetter, -1)
 	}
 }
 
-PlayNoteCallback(note)
+PlayNoteCallback(note, ms := 100)
 {
-	key := NoteKeys[note]
+	key := NoteKeys[note].key
+	mod := NoteKeys[note].mod
+	
+	down := NoteKeys[note].Down()
+	downmod := NoteKeys[note].DownMod()
+	down := downmod . down
 	if(WinExist("ahk_class FFXIVGAME")) {
-		ControlSend,, %key%, ahk_class FFXIVGAME
-	} else {
-		;MsgBox, %note%
+		if(ms > 0) {
+			upFunc := Func("PlayNoteEnd").Bind(note)
+			SetTimer, % upFunc, % -Abs(ms)
+	;		ToolTip, %down% to %ms%
+		}
+		ControlSend,, %down%, ahk_class FFXIVGAME
 	}
 	return
+}
+
+PlayNoteEnd(note)
+{
+	up := NoteKeys[note].Up()
+	upmod := NoteKeys[note].UpMod()
+	up := up . upmod
+	if(WinExist("ahk_class FFXIVGAME")) {
+		ControlSend,, %up%, ahk_class FFXIVGAME
+	;	ToolTip, OK
+	}
 }
