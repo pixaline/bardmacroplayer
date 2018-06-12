@@ -157,7 +157,7 @@ MakeMainWindow() {
 	
 	sliderWidth := 75
 	
-	Gui, PlayWindow: New, +hwndMainHwnd +ToolWindow +AlwaysOnTop
+	Gui, PlayWindow: New, +hwndMainHwnd +AlwaysOnTop
 	Gui, PlayWindow:+Owner +OwnDialogs
 	Gui, PlayWindow: Show, Hide w%playWidth% h%playHeight%, FFXIV Bard Macro Player %Version%
 	
@@ -183,7 +183,10 @@ MakeMainWindow() {
 	
 	OnMessage(0x111, "MainWindowCommand")
 	OnMessage(0x203, "MainWindowDoubleClick")
+	OnMessage(0x200, "MainWindowMove")
 	OnMessage(0x201, "MainWindowDown")
+	OnMessage(0x20A, "MainWindowWheel")
+	OnMessage(0x47 , "MainWindowPos")
 	
 	Menu, AppMenu, Add, Parsed keys, ShowParsedKeyboard
 	Menu, AppMenu, Add, Project site, LaunchGithub
@@ -202,22 +205,16 @@ LaunchGithubReleases() {
 	GuiControl, Font, FileLoadedControl
 }
 OctaveSlider() {
-	Gui, Submit, NoHide
 	if(currentPlayer) {
 		currentPlayer.octaveShift := OctaveShift
-		text := Format("Octave shift: {:d}", currentPlayer.octaveShift)
-		ToolTip, % text ,,, 1
 	}
 }
 SpeedSlider() {
-	Gui, Submit, NoHide
 	if(currentPlayer) {
 		if(SpeedShift < 1) {
 			SpeedShift := 1
 		}
 		currentPlayer.speedShift := SpeedShift / 10
-		text := Format("Speed shift: {:d}%", SpeedShift * 10)
-		ToolTip, % text ,,, 1
 	}
 }
 StopSubmit() {
@@ -335,6 +332,30 @@ MainWindowDoubleClick(wParam, lParam) {
 		MainWindowDown(wParam, lParam)
 	}
 }
+MainWindowMove(wParam, lParam, msg := 0, hwnd := 0) {
+	MouseGetPos,,,, hoverControl
+	WinGetPos, mainWindowX, mainWindowY, mainWindowWidth, mainWindowHeight, ahk_id %MainHwnd%
+	ControlGetPos, progX, progY, progWidth, progHeight, %hoverControl%, ahk_id %MainHwnd%
+	tx := mainWindowX + progX + progWidth
+	ty := mainWindowY + progY - 5
+	
+	CoordMode, ToolTip, Screen
+	if(A_GuiControl == "OctaveShift") {
+		ToolTip, Octave shift: [%OctaveShift%], tx, ty, 3
+		
+	} else if(A_GuiControl == "SpeedShift") {
+		ss := (SpeedShift * 10)
+		ToolTip, Speed shift: [%ss%`%], tx, ty, 3
+		
+	} else if(A_GuiControl == "SongProgressBar") {
+		tx += -progWidth + 30
+		ty += -20
+		ToolTip, Song progress, tx, ty, 3
+		
+	} else {
+		ToolTip,,,, 3
+	}
+}
 MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 	ToolTip,,,, 1
 	if(A_GuiControl) {
@@ -363,6 +384,28 @@ MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 			PostMessage, 0x202, % wParam, % lParam,, ahk_id %hwndList%
 			; Focus the list itself. This is because of possible large delays with updating file list.
 		}
+	}
+}
+MainWindowWheel(wParam, lParam, msg := 0, hwnd := 0) {
+global OctaveShift
+global SpeedShift
+	wh := (wParam >> 16)
+	move := 1 * (wh < 0 ? 1 : -1)
+	
+	if(A_GuiControl == "OctaveShift") {
+		shift := OctaveShift + move
+		OctaveShift := shift
+		OctaveSlider()
+		OctaveShift := shift
+		MainWindowMove(wParam, lParam)
+		return
+		
+	} else if(A_GuiControl == "SpeedShift") {
+		shift := SpeedShift + move
+		SpeedShift := shift
+		SpeedSlider()
+		SpeedShift := shift
+		MainWindowMove(wParam, lParam)
 	}
 }
 
