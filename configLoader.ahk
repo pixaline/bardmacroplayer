@@ -11,6 +11,21 @@ ToUnixTimestamp(T) {
 }
 global keybindFiles := {}
 global selectedKeybind
+
+global keyTranslate := {"82":"BB","83":"BC","85":"BE","86":"BF","87":"BA","88":"C0","89":"DB","8A":"DC","8B":"DD","8C":"DE","8D":"DF"}
+; 82 BB  =
+; 83 BC  ,
+;; 84 BD (maybe? unknown key atm)
+; 85 BE  .
+; 86 BF  /
+; 87 BA  ¨ ;
+; 88 C0  ö '
+; 89 DB  [ ´
+; 8A DC  §
+; 8B DD  å ]
+; 8C DE  ä #
+; 8D DF  `
+
 	
 SelectKeybindsFile()
 {
@@ -72,7 +87,12 @@ GetKeyLetter(binds, key, def := 0) {
 		}
 	}
 	if(in && binds[key].key1 != 0) {
-		c := Format("{:L}", Chr(binds[key].key1))
+		c := SubStr(binds[key].key1, 3)
+		for i, v in keyTranslate {
+			if(i == c) {
+				c := v
+			}
+		}
 		return c
 	}
 	return def
