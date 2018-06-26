@@ -602,9 +602,11 @@ LoadFile(file, track := 1) {
 }
 
 PlayMidiInput(note, vel) {
+	noteLetter := BardRange[(note + 1 -(12 * (3 - OctaveShift)))]
 	if(vel) {
-		noteLetter := BardRange[(note + 1 -(12 * (3 - OctaveShift)))]
 		PlayNoteCallback(noteLetter, -1)
+	} else {
+		PlayNoteEnd(noteLetter)
 	}
 }
 
