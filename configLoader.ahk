@@ -124,10 +124,7 @@ class NoteKey {
 		return ""
 	}
 	Down() {
-		s := "{" . this.key . " down}"
-		if(this.mod) {
-			;s := this.DownMod() . s
-		}
+		s := "{vk" . this.key . " down}"
 		return s
 	}
 	UpMod() {
@@ -137,10 +134,7 @@ class NoteKey {
 		return ""
 	}
 	Up() {
-		s := "{" . this.key . " up}"
-		if(this.mod) {
-			;s := s . this.UpMod()
-		}
+		s := "{vk" . this.key . " up}"
 		return s
 	}
 }
