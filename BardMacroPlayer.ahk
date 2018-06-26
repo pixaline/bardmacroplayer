@@ -60,6 +60,8 @@ global FileLoadedControl
 global StopControl
 global PlayPauseControl
 global LayoutControl
+global OctaveSlider
+global SpeedSlider
 
 global trayIcon := "bard.ico"
 ICON [trayIcon]
@@ -174,8 +176,8 @@ MakeMainWindow() {
 	Gui, Font, s18, Webdings
 	Gui, Add, Button, Hide xs Section w30 h30 vStopControl gStopSubmit, <
 	Gui, Add, Button, Hide ys w30 h30 vPlayPauseControl gPausePlaySubmit, `;
-	Gui, Add, Slider, xs Thick10 vOctaveShift gOctaveSlider Range-4-4 w%sliderWidth% h10, 0
-	Gui, Add, Slider, xs Thick10 vSpeedShift gSpeedSlider Range0-20 w%sliderWidth% h10, 10
+	Gui, Add, Slider, xs Thick10 vOctaveSlider Range-4-4 w%sliderWidth% h10, 0
+	Gui, Add, Slider, xs Thick10 vSpeedSlider Range0-20 w%sliderWidth% h10, 10
 	
 	Gui, Font, s8 w400, Segoe UI
 	Gui, Add, Text, Section ys w180 h45 vFileLoadedControl, [ Bard Macro Player %Version% ]`n by Freya Katva @ Ultros
@@ -185,6 +187,7 @@ MakeMainWindow() {
 	OnMessage(0x203, "MainWindowDoubleClick")
 	OnMessage(0x200, "MainWindowMove")
 	OnMessage(0x201, "MainWindowDown")
+	OnMessage(0x202, "MainWindowUp")
 	OnMessage(0x20A, "MainWindowWheel")
 	OnMessage(0x47 , "MainWindowPos")
 	
@@ -204,16 +207,23 @@ LaunchGithubReleases() {
 	Gui, Font, cBlack
 	GuiControl, Font, FileLoadedControl
 }
-OctaveSlider() {
+SetOctaveSlider() {
+	if(OctaveShift < -4) {
+		OctaveShift := -4
+	} else if(OctaveShift > 4) {
+		OctaveShift := 4
+	}
 	if(currentPlayer) {
 		currentPlayer.octaveShift := OctaveShift
 	}
 }
-SpeedSlider() {
+SetSpeedSlider() {
+	if(SpeedShift < 1) {
+		SpeedShift := 1
+	} else if(SpeedShift > 20) {
+		SpeedShift := 20
+	}
 	if(currentPlayer) {
-		if(SpeedShift < 1) {
-			SpeedShift := 1
-		}
 		currentPlayer.speedShift := SpeedShift / 10
 	}
 }
@@ -340,10 +350,10 @@ MainWindowMove(wParam, lParam, msg := 0, hwnd := 0) {
 	ty := mainWindowY + progY - 5
 	
 	CoordMode, ToolTip, Screen
-	if(A_GuiControl == "OctaveShift") {
+	if(A_GuiControl == "OctaveSlider") {
 		ToolTip, Octave shift: [%OctaveShift%], tx, ty, 3
 		
-	} else if(A_GuiControl == "SpeedShift") {
+	} else if(A_GuiControl == "SpeedSlider") {
 		ss := (SpeedShift * 10)
 		ToolTip, Speed shift: [%ss%`%], tx, ty, 3
 		
@@ -386,26 +396,41 @@ MainWindowDown(wParam, lParam, msg := 0, hwnd := 0) {
 		}
 	}
 }
+MainWindowUp(wParam, lParam, msg := 0, hwnd := 0) {
+	if(A_GuiControl == "OctaveSlider") {
+		Gui, Submit, NoHide
+		OctaveShift := OctaveSlider
+	}
+	if(A_GuiControl == "SpeedSlider") {
+		Gui, Submit, NoHide
+		SpeedShift := SpeedSlider
+	}
+}
 MainWindowWheel(wParam, lParam, msg := 0, hwnd := 0) {
 global OctaveShift
 global SpeedShift
 	wh := (wParam >> 16)
 	move := 1 * (wh < 0 ? 1 : -1)
 	
-	if(A_GuiControl == "OctaveShift") {
-		shift := OctaveShift + move
-		OctaveShift := shift
-		OctaveSlider()
-		OctaveShift := shift
+	if(A_GuiControl == "OctaveSlider") {
+		GuiControl,, OctaveSlider, +move
+		Gui, Submit, NoHide
+		
+		OctaveShift := OctaveSlider + move
+		SetOctaveSlider()
+		
 		MainWindowMove(wParam, lParam)
 		return
 		
-	} else if(A_GuiControl == "SpeedShift") {
-		shift := SpeedShift + move
-		SpeedShift := shift
-		SpeedSlider()
-		SpeedShift := shift
+	} else if(A_GuiControl == "SpeedSlider") {
+		GuiControl,, SpeedSlider, +move
+		Gui, Submit, NoHide
+		
+		SpeedShift := SpeedSlider + move
+		SetSpeedSlider()
+		
 		MainWindowMove(wParam, lParam)
+		return
 	}
 }
 
