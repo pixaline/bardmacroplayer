@@ -12,10 +12,10 @@ ToUnixTimestamp(T) {
 global keybindFiles := {}
 global selectedKeybind
 
-global keyTranslate := {"82":"BB","83":"BC","85":"BE","86":"BF","87":"BA","88":"C0","89":"DB","8A":"DC","8B":"DD","8C":"DE","8D":"DF"}
+global keyTranslate := {"82":"BB","83":"BC","84":"BD","85":"BE","86":"BF","87":"BA","88":"C0","89":"DB","8A":"DC","8B":"DD","8C":"DE","8D":"DF"}
 ; 82 BB  =
 ; 83 BC  ,
-;; 84 BD (maybe? unknown key atm)
+; 84 BD  -
 ; 85 BE  .
 ; 86 BF  /
 ; 87 BA  ¨ ;
