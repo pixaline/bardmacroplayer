@@ -139,6 +139,22 @@ class NoteKey {
 	}
 }
 
+ReadKeyTest()
+{
+	filename := SelectKeybindsFile()
+	binds := readKeybinds(filename)
+	c :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_C4")
+	d :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_D4")
+	e :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_E4")
+	f :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_F4")
+	g :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_G4")
+	a :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_A4")
+	b :=    GetKeyLetter(binds, "PERFORMANCE_MODE_EX_B4")
+
+	MsgBox, C: %c%`nD: %d%`nE: %e%`nF: %f%`nG: %g%`nA: %a%`nB: %b%
+}
+
+
 ReadKeyConfig()
 {
 	filename := SelectKeybindsFile()
