@@ -9,7 +9,7 @@ global BardRange := ["C-1", "C#-1", "D-1", "Eb-1", "E-1", "F-1", "F#-1", "G-1", 
 global OctaveShift := 0
 global SpeedShift := 10
 
-global curVersion = 1.3
+global curVersion = 1.4
 global Version := Format("v{:g}", curVersion)
 global MidiInModule
 global MainHwnd
