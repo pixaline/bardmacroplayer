@@ -1,5 +1,7 @@
 # Important Update
-**This tool is no longer being developed. It has been replaced by Bard Music Player, the sequel with much more functionality and stability for playing back Midi files in exchange for dropping Text file arrangement support.** The project will still exist in an archived form here, but support will no longer be given. I cannot guarantee the functionality of this program across major game patches. Though, AHK is a pretty simple language. Feel free to fork this.
+**This tool is no longer being developed. It has been replaced by [Bard Music Player](http://bmp.sqnya.se), the sequel with much more functionality and stability for playing back Midi files in exchange for dropping Text file arrangement support.** The project will still exist in an archived form here, but support will no longer be given. I cannot guarantee the functionality of this program across major game patches. Though, AHK is a pretty simple language. Feel free to fork this.
+
+---
 
 ---
 
