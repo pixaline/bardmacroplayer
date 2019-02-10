@@ -1,5 +1,9 @@
-# FFXIV Bard Macro Player
-![Bard Macro Player preview](http://sqnya.se/bard.png)
+# Important Update
+**This tool is no longer being developed. It has been replaced by Bard Music Player, the sequel with much more functionality and stability for playing back Midi files in exchange for dropping Text file arrangement support.** The project will still exist in an archived form here, but support will no longer be given. I cannot guarantee the functionality of this program across major game patches. Though, AHK is a pretty simple language. Feel free to fork this.
+
+---
+
+## FFXIV Bard Macro Player
 This is an utility to play 3 octave arrangements from text files and midi files using the Autohotkey language. It loads and parses ffxiv's KEYBIND.DAT file (autodetected by access time) to find the keystrokes for the Performance actions, loads and parses the text/midi files and converts it to millisecond time format, and then implements a note player that sends the correct keystrokes to the FFXIV window.
 
 ## Usage
